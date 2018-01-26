@@ -2,6 +2,9 @@ module Main exposing (..)
 
 import Html exposing (Html, button, div, h1, i, img, text)
 import Html.Attributes exposing (class, src)
+import Json.Decode as Decode exposing (Value)
+import Navigation exposing (Location)
+import Route exposing (Route(..))
 
 
 ---- MODEL ----
@@ -11,8 +14,8 @@ type alias Model =
     {}
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Value -> Location -> ( Model, Cmd Msg )
+init val location =
     ( {}, Cmd.none )
 
 
@@ -21,7 +24,24 @@ init =
 
 
 type Msg
-    = NoOp
+    = SetRoute (Maybe Route)
+
+
+
+-- TODO: change this so it'll return the right combination of model and Cmd's in each case
+
+
+setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
+setRoute maybeRoute model =
+    case maybeRoute of
+        Nothing ->
+            ( model, Cmd.none )
+
+        Just Route.Home ->
+            ( model, Cmd.none )
+
+        Just Route.Authorize ->
+            ( model, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -48,9 +68,9 @@ view model =
 ---- PROGRAM ----
 
 
-main : Program Never Model Msg
+main : Program Value Model Msg
 main =
-    Html.program
+    Navigation.programWithFlags (Route.fromLocation >> SetRoute)
         { view = view
         , init = init
         , update = update
