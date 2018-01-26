@@ -1,7 +1,7 @@
 module Main exposing (..)
 
-import Html exposing (Html, button, div, h1, img, text)
-import Html.Attributes exposing (src)
+import Html exposing (Html, button, div, h1, i, img, text)
+import Html.Attributes exposing (class, src)
 
 
 ---- MODEL ----
@@ -36,9 +36,11 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ img [ src "/logo.svg" ] []
-        , h1 [] [ text "Ghoster, A better way to handle github permissions!" ]
-        , button [] [ text "Nothing happens yet" ]
+        [ h1 [] [ text "Ghoster, A better way to handle github permissions!" ]
+        , button []
+            [ i [ class "fab fa-github" ] []
+            , text " Authorize with Github"
+            ]
         ]
 
 
