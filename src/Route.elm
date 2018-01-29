@@ -1,7 +1,7 @@
-module Route exposing (Route(..), fromLocation)
+module Route exposing (Route(..), parseLocation)
 
 import Navigation exposing (Location)
-import UrlParser as Url exposing ((</>), Parser, oneOf, parseHash, s)
+import UrlParser as Url exposing (Parser, oneOf, parsePath, s, top)
 
 
 -- ROUTING --
@@ -10,20 +10,27 @@ import UrlParser as Url exposing ((</>), Parser, oneOf, parseHash, s)
 type Route
     = Home
     | Authorize
+    | NotFound
 
 
-route : Parser (Route -> a) a
-route =
-    oneOf [ Url.map Home (s ""), Url.map Authorize (s "authorize") ]
+matchers : Parser (Route -> a) a
+matchers =
+    oneOf
+        [ Url.map Home top
+        , Url.map Home (s "home")
+        , Url.map Authorize (s "authorize")
+        ]
 
 
 
 -- HELPER FUNCTIONS --
 
 
-fromLocation : Location -> Maybe Route
-fromLocation location =
-    if String.isEmpty location.hash then
-        Just Home
-    else
-        parseHash route location
+parseLocation : Location -> Route
+parseLocation location =
+    case parsePath matchers location of
+        Just route ->
+            Debug.log "route =" route
+
+        Nothing ->
+            NotFound

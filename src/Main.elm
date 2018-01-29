@@ -1,52 +1,63 @@
 module Main exposing (..)
 
 import Html exposing (Html, button, div, h1, i, img, text)
-import Html.Attributes exposing (class, src)
-import Json.Decode as Decode exposing (Value)
+import Msgs exposing (Msg(..))
 import Navigation exposing (Location)
-import Route exposing (Route(..))
+import Page.Authorize exposing (..)
+import Page.Home exposing (..)
+import Route exposing (Route(..), parseLocation)
 
 
 ---- MODEL ----
 
 
 type alias Model =
-    {}
+    { route : Route }
 
 
-init : Value -> Location -> ( Model, Cmd Msg )
-init val location =
-    ( {}, Cmd.none )
+initialModel : Route -> Model
+initialModel route =
+    { route = route }
+
+
+init : Location -> ( Model, Cmd Msg )
+init location =
+    let
+        currentRoute =
+            Route.parseLocation location
+    in
+    ( { route = currentRoute }, Cmd.none )
 
 
 
 ---- UPDATE ----
 
 
-type Msg
-    = SetRoute (Maybe Route)
-
-
-
--- TODO: change this so it'll return the right combination of model and Cmd's in each case
-
-
-setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
-setRoute maybeRoute model =
-    case maybeRoute of
-        Nothing ->
+setRoute : Route -> Model -> ( Model, Cmd Msg )
+setRoute route model =
+    case route of
+        Route.Home ->
             ( model, Cmd.none )
 
-        Just Route.Home ->
+        Route.Authorize ->
             ( model, Cmd.none )
 
-        Just Route.Authorize ->
+        Route.NotFound ->
             ( model, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        OnLocationChange location ->
+            let
+                newRoute =
+                    parseLocation location
+            in
+            ( { model | route = newRoute }, Cmd.none )
+
+        ChangeLocation path ->
+            ( model, Navigation.newUrl path )
 
 
 
@@ -56,21 +67,30 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ h1 [] [ text "Ghoster, A better way to handle github permissions!" ]
-        , button []
-            [ i [ class "fab fa-github" ] []
-            , text " Authorize with Github"
-            ]
-        ]
+        [ page model ]
+
+
+page : Model -> Html Msg
+page model =
+    case model.route of
+        Route.Home ->
+            Page.Home.view
+
+        Route.Authorize ->
+            Page.Authorize.view
+
+        Route.NotFound ->
+            div []
+                [ text "route not found" ]
 
 
 
 ---- PROGRAM ----
 
 
-main : Program Value Model Msg
+main : Program Never Model Msg
 main =
-    Navigation.programWithFlags (Route.fromLocation >> SetRoute)
+    Navigation.program OnLocationChange
         { view = view
         , init = init
         , update = update
