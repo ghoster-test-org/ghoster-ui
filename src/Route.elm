@@ -30,7 +30,7 @@ parseLocation : Location -> Route
 parseLocation location =
     case parsePath matchers location of
         Just route ->
-            Debug.log "route =" route
+            route
 
         Nothing ->
             NotFound
